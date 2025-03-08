@@ -38,15 +38,6 @@ conn = psycopg2.connect(
 )
 cursor = conn.cursor()
 
-# Ensure table exists
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS sensor_data (
-        id SERIAL PRIMARY KEY,
-        timestamp TIMESTAMP,
-        value FLOAT
-    )
-""")
-conn.commit()
 
 def process_csv_file(file_name):
     """Download and process CSV file from MinIO"""
@@ -61,8 +52,8 @@ def process_csv_file(file_name):
         # Insert data into PostgreSQL
         for _, row in df.iterrows():
             cursor.execute(
-                "INSERT INTO sensor_data (timestamp, value) VALUES (%s, %s)",
-                (row["timestamp"], row["value"])
+                "INSERT INTO actuals (ts, value) VALUES (%s, %s)",
+                (row["ts"], row["value"])
             )
         conn.commit()
         print(f"Inserted {len(df)} rows into PostgreSQL")

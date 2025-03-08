@@ -1,24 +1,26 @@
 # **Kubernetes & Data Processing**
 
-This project is a **Kubernetes-based application** where you deploy a **web application** and a **PostgreSQL database**, troubleshoot issues, and enhance the system with an additional service that processes CSV files from a **MinIO blob storage** into PostgreSQL.
+This project deploys a **web application** and a **PostgreSQL database** in **Kubernetes**, troubleshoots issues, and enhances the system with a **CSV processing service** that reads files from **MinIO** and inserts data into **PostgreSQL**.
+
+---
 
 ## **Project Overview**
 The project consists of:
-1. **Web Application** - A containerized web service that connects to a PostgreSQL database.
-2. **PostgreSQL Database** - A stateful database deployed in Kubernetes.
-3. **MinIO Blob Storage** - Stores CSV files that will be processed and inserted into the PostgreSQL database.
-4. **CSV Processor** - A Python script that watches MinIO, processes new CSV files, and stores the data in PostgreSQL.
+1. **Web Application** - Connects to PostgreSQL.
+2. **PostgreSQL Database** - A stateful database in Kubernetes.
+3. **MinIO Blob Storage** - Stores CSV files for processing.
+4. **CSV Processor** - Watches MinIO, processes CSV files, and inserts data into PostgreSQL.
 
 ---
 
 ## **Deployment**
 ### **Prerequisites**
-Ensure you have the following installed:
-- Kubernetes cluster (I used EKS)
-- `kubectl` CLI
-- Docker
-- MinIO or an S3-compatible storage
-- PostgreSQL client for verification
+Ensure you have:
+- A **Kubernetes cluster** (EKS, GKE, AKS)
+- **kubectl** CLI
+- **Docker**
+- **MinIO** or an **S3-compatible** storage
+- **PostgreSQL** client for verification
 
 ---
 
@@ -34,30 +36,28 @@ Ensure you have the following installed:
    kubectl apply -f webapp-manifest.yaml
    ```
 
-3. **Verify the status of your pods**:
+3. **Verify pod status**:
    ```sh
    kubectl get pods
    ```
 
-Once the application is running, Adjust the security groups on the Node to accept traffic from the NodePort(30007):
+4. **Update security groups** on the node to allow NodePort traffic (30007).
 
-Now, you can access the application at:
+Now, access the application at:
 ```
-http://<Nodes-IP>:30007
+http://<Node-IP>:30007
 ```
 
 ---
 
 ## **Enhancements - CSV Processing Application**
 ### **Service Overview**
-A separate service runs a Python script that:
-- Watches a **MinIO bucket** for new CSV files.
-- Reads and parses the CSV data.
-- Inserts the data into the PostgreSQL database.
+The **CSV Processor**:
+- Watches **MinIO** for new CSV files.
+- Reads and parses CSV data.
+- Inserts the data into **PostgreSQL**.
 
 ---
-
-
 
 ### **Dockerizing the CSV Processor**
 #### **Dockerfile**
@@ -65,7 +65,7 @@ A separate service runs a Python script that:
 # Use Ubuntu 20.04 as the base image
 FROM ubuntu:20.04
 
-# Set environment variables to prevent interactive prompts during package installation
+# Set environment variables to prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
@@ -91,49 +91,44 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 CMD ["python3", "csv_processor.py"]
 ```
 
-#### **Build and Run**
+#### **Build and Push Image**
 1. **Build the Docker image**:
    ```sh
    docker build -t myrepo/csv-processor:latest .
    ```
 
-2. **Push the image to Dockerhub**:
+2. **Push to Docker Hub**:
    ```sh
-   docker push -t myrepo/csv-processor:latest
+   docker push myrepo/csv-processor:latest
    ```
 
-3. **Attach the image to the Kubernetes Manifest and deploy the csv-processor application**
+3. **Deploy in Kubernetes**:
+   ```sh
+   kubectl apply -f processor-app.yaml
+   ```
 
-
-```sh
-kubectl apply -f processor-app.yaml
-```
 ---
 
 ## **Testing**
-### Create Minio on Kubernetes
-Write a Kubernetes Manifest to deploy minio on Kubernetes using the following manifest
-
-###
+### **Deploy MinIO**
+Apply the MinIO manifest:
 ```sh
 kubectl apply -f new-application-minio.yaml
 ```
-
-Check your browser to confirm minio is running
+Check the browser to confirm MinIO is running.
 
 ![Minio](png/annotely_image%20(5).png)
 
+### **Upload a Test CSV to MinIO**
+- On the **MinIO dashboard**, create a **bucket**.
+- Upload a **test CSV file**.
+- The **CSV Processor** will detect, process, and insert data into **PostgreSQL**.
 
-### **Upload a test CSV to MinIO**
-
-On the Minio dashboard, create a bucket and upload a test csv file.
-The CSV Processor application running on Kubernetes will detect the file, process it, and insert data into PostgreSQL.
-
-### **Check the PostgreSQL database**
+### **Verify PostgreSQL Data**
 ```sh
 kubectl exec -it <postgres-pod> -- psql -U postgres -d postgresdb
 ```
-Then run:
+Run:
 ```sql
 SELECT * FROM actuals;
 ```
@@ -141,15 +136,14 @@ You should see the inserted data.
 
 ![Database](png/annotely_image%20(6).png)
 
-
-Refresh the Webapp, and the new data will be inserted.
+Refresh the **Web App** to see the new data.
 
 ![Final Output](png/annotely_image%20(4).png)
 
 ---
 
-## **Cleaning Up**
-To delete all resources:
+## **Cleanup**
+To remove all resources:
 ```sh
 kubectl delete -f webapp-manifest.yaml
 docker stop $(docker ps -aq)
@@ -158,4 +152,4 @@ docker stop $(docker ps -aq)
 ---
 
 ## **Conclusion**
-This project showcases **Kubernetes deployment, troubleshooting, and enhancements** with an additional **CSV processing service** using **MinIO, PostgreSQL, and Python**. 🚀
+This project demonstrates **Kubernetes deployment, troubleshooting, and enhancement** with a **CSV processing service** using **MinIO, PostgreSQL, and Python**. 🚀
