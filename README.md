@@ -2,22 +2,6 @@
 
 This project is a **Kubernetes-based application** where you deploy a **web application** and a **PostgreSQL database**, troubleshoot issues, and enhance the system with an additional service that processes CSV files from a **MinIO blob storage** into PostgreSQL.
 
-## **Table of Contents**
-- [Project Overview](#project-overview)
-- [Deployment](#deployment)
-  - [Prerequisites](#prerequisites)
-  - [Deploying the Application](#deploying-the-application)
-- [Fixing Image Pull Errors](#fixing-image-pull-errors)
-- [Port Forwarding](#port-forwarding)
-- [Enhancements - CSV Processing Application](#enhancements---csv-processing-application)
-  - [Service Overview](#service-overview)
-  - [Environment Variables](#environment-variables)
-  - [Dockerizing the CSV Processor](#dockerizing-the-csv-processor)
-- [Testing](#testing)
-- [Cleaning Up](#cleaning-up)
-
----
-
 ## **Project Overview**
 The project consists of:
 1. **Web Application** - A containerized web service that connects to a PostgreSQL database.
