@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: csv-processor
+  namespace: data-processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csv-processor
+  template:
+    metadata:
+      labels:
+        app: csv-processor
+    spec:
+      containers:
+      - name: csv-processor
+        image: obusorezekiel/csv-processor:latest  # Build and push to your registry
+        imagePullPolicy: Always
+        env:
+        - name: POSTGRES_DB
+          value: "postgresdb"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_HOST
+          value: "postgres"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_PASSWORD
+          value: "mysecurepassword"
+        - name: MINIO_URL
+          value: "http://minio:9000"
+        - name: MINIO_ACCESS_KEY
+          value: "minioadmin"
+        - name: MINIO_SECRET_KEY
+          value: "minioadmin"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: csv-processor
+  namespace: data-processor
+spec:
+  selector:
+    app: csv-processor
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001
